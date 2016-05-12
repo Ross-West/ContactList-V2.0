@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+
+    <head>
+
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+        -->
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+            <link rel="stylesheet" type="text/css" href="css/sillybilly.min.css">
+                  <link rel="stylesheet" type="text/css" href="css/jquery.mobile.icons.min.css">
+         <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css">
+
+        <title>ContactList</title>
+ 
+        <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+         <script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+           <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript">
+            $(function(){       
+                $('#select_link').click(function(e){
+                    e.preventDefault();
+                    console.log('select_link clicked');
+                    
+                    
+          var data = {};
+          data.title = "title";
+          data.message = "message";
+          
+          $.ajax({
+            type: 'GET',
+            data: JSON.stringify(data),
+                contentType: 'application/json',
+                        url: 'http://localhost:8081/listUsers',           
+                        success: function(data) {
+                            console.log('success');
+                            console.log(JSON.stringify(data));
+                        },
+                    error: function (msg, url, line) {
+                        alert('error trapped in error: function(msg, url, line)');
+                        alert('msg = ' + msg + ', url = ' + url + ', line = ' + line);
+
+                    }
+                    });
+          
+                });       
+            });
+        </script>
+   <!-- <script>
+                $(document).bind('mobileinit',function(){
+                    $.mobile.changePage.defaults.changeHash = false;
+                    $.mobile.hashListeningEnabled = false;
+                    $.mobile.pushStateEnabled = false;
+                });
+            </script>
+            -->
+      
+    </head>
+    <body>
+        <div id="list" data-role="page">
+         <div data-role="header">
+         <h1>Contacts</h1>
+         <div data-role="navbar">
+         <ul>
+          <li><a href="#myPopup" data-rel="popup" class="ui-btn ui-btn-right ui-icon-search ui-btn-icon-left"">Search</a></li>
+    
+    <div data-role="popup" id="myPopup">
+      <input type="search" id="search">
+    </div>
+           <li> <a href="#edit" class="ui-btn ui-btn-left ui-icon-plus ui-btn-icon-left">New</a></li>
+            </ul>
+</div>
+
+                 
+            </div>
+            <div id="deviceready" data-role="main" class="ui-content">
+                <ul data-role="listview" data-inset="true"  data-autodividers="true" id="contacts"> 
+
+            </ul>
+            </div>
+             <div data-role="footer">
+             
+  </div>
+        </div>
+         <div id="details" data-role="page">
+           <div data-role="header">
+          <h1 id="contacthead">Contact Name</h1>
+            </div>
+            <div id="deviceready" data-role="main" class="ui-content">
+            <img src="" id="contactImage" height="140px" style="object-fit: scale-down;">
+            <label for="Name">Name: </label>
+      <input type="contactText" id="contactName" disabled="true">
+      <label for="Tele">Phone #</label>
+      <input type="tel" id="contactTele" disabled="true">
+       <label for="Notes" >Notes<label>
+      <textarea id="contactNotes" disabled="true"></textarea> 
+            
+            </div>
+             <div data-role="footer">
+                <div data-role="navbar">
+         <ul>
+          <li><a href="#list" id="emptyContact" class="ui-btn ui-btn-left ui-icon-plus ui-btn-icon-left" >cancel</a></li>
+          <li><a href="#edit"  id="editContact" class="ui-btn ui-btn-right ui-icon-plus ui-btn-icon-left" >edit</a></li>
+  </div>
+        </div>
+
+        </div>
+            <div id="edit" data-role="page">
+           <div data-role="header">
+          <h1 id="editHead">new contact</h1>
+            </div>
+            <div id="deviceready" data-role="main" class="ui-content">
+            <img src="" id="theImage" height="140px" style="object-fit: scale-down;">
+            <input type="button" id="takePicture" class="ui-btn ui-icon-home ui-btn-icon-left" />
+           <label for="Name">Name: </label>
+      <input type="text" id="Name">
+      <label for="Tele">Phone #</label>
+      <input type="tel" id="Tele">
+       <label for="Notes">Notes<label>
+      <textarea id="Notes"></textarea> 
+            <p style="display:none" id='oldId'>-1</p> 
+            </div>
+              <div data-role="footer">
+                <div data-role="navbar">
+         <ul>
+          <li><a href="#list" id="cancel" class="ui-btn ui-btn-left ui-icon-plus ui-btn-icon-left" >cancel</a></li>
+          <li><a href="#list"  id="add" class="ui-btn ui-btn-right ui-icon-plus ui-btn-icon-left" >add</a></li>
+  </div>
+        </div>
+       
+    </body>
+</html>
