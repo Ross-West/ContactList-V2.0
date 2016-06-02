@@ -16,95 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 function contact(src, tele, name, notes){
-   this.src=src;
-   this.name=name;
-    this.tele=tele;
-    this.notes=notes;
-}
-contacts={};
-
-var app = {
-    // Application Constructor
-    initialize: function() {
-        this.bindEvents();
-    },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-    },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
-    onDeviceReady: function() {
-       // app.receivedEvent('deviceready');
-    }
-    // Update DOM on a Received Event
-    /*receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
-
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
-        console.log('Received Event: ' + id);
-    }*/
-};
-
-app.initialize();
-
-document.addEventListener("deviceready", function(){
-    document.getElementById('takePicture').addEventListener('click', onPictureClick);
-    document.getElementById('takePicture').addEventListener('tap', onPictureClick);
-
+    this.src=src;
+    this.name=name;
+    db.usercollection.insert({
+    "name" : name, 
+    "tele" : tele, 
+    "notes" : notes })
+    }, function (err, doc) {
+        if (err) {
+            // If it failed, return error
+            res.send("There was a problem adding the information to the database.");
+        }
+        else {
+            // And forward to success page
+            res.redirect("usercollection");
+        }
+    });
 });
 
-function onPictureClick(){
-    
-    navigator.camera.getPicture(cameraCallback, cameraError, {destinationType: Camera.DestinationType.DATA_URL});
-}
-
-function cameraError(msg){
-    alert(1);
-}
-
-function cameraCallback(imageData) {
-   var image = $('#theImage')[0];
-   image.src = "data:image/jpeg;base64," + imageData;
-   //alert(imageData);
-   //$('#theImage').show();
-
-}
-
-
-//Test for browser compatibility
-if (window.openDatabase) {
-    //Create the database the parameters are 1. the database name 2.version number 3. a description 4. the size of the database (in bytes) 1024 x 1024 = 1MB
-    var mydb = openDatabase("contact_db", "0.1", "A Database of Cars I Like", 1024 * 1024);
-
-    //create the cars table using SQL for the database using a transaction
-    mydb.transaction(function (t) {
-        t.executeSql("CREATE TABLE IF NOT EXISTS contacts (id INTEGER PRIMARY KEY ASC, image TEXT, tele TEXT, name TEXT, notes TEXT)");
-    });
-
-
-
-} 
-
-//function to output the list of cars in the database
+//function to output the list of contacts in the database
+//RW: Why is this one called UpdateContactList and not OutputContactList?!
+//And worse is that I don't even know where this is called
 
 function updateContactList(transaction, results) {
     //initialise the listitems variable
     var listitems = "";
-    //get the car list holder ul
+    //get the contact list holder ul
     var listholder = document.getElementById("contacts");
 
-    //clear cars list ul
+    //clear contact list ul
     listholder.innerHTML = "";
 
     var i;
@@ -115,7 +57,16 @@ function updateContactList(transaction, results) {
 
         listholder.innerHTML += "<li class='ui-btn ui-icon-user ui-btn-icon-left' id='"+row.id + "'><a href='#details' >"+row.name+"</a></li>";
 
-        contacts[row.id]=new contact(row.image, row.tele, row.name, row.notes);
+    /* GET Userlist page. */
+    router.get('/userlist', function(req, res) {
+        var db = req.db;
+        var collection = db.get('usercollection');
+        collection.find({},{},function(e,docs){
+            res.render('userlist', {
+                "userlist" : docs
+            });
+        });
+    });
        
         $("#"+row.id).on("tap",function(){
             fillContact(row.id);
@@ -128,9 +79,7 @@ function updateContactList(transaction, results) {
            deleteContact(row.id);
   }
 });
-
     }
-
 }
 $("#emptyContact").on("tap",function(){
             clearContact();
@@ -166,17 +115,19 @@ function clearContact(){
 }
 
 //function to get the list of cars from the database
-
+//RW: MR. CZINNER, WHY THE HELL DOES THE FUCTION THAT GETS THE LIST CALLED OUTPUT CONTACTS?!?!
+//This is what was delaying me for so long, I assumed all comments were accurate!
 function outputContacts() {
-    //check to ensure the mydb object has been created
-    if (mydb) {
-        //Get all the cars from the database with a select statement, set outputCarList as the callback function for the executeSql command
-        mydb.transaction(function (t) {
-            t.executeSql("SELECT * FROM contacts ORDER BY name", [], updateContactList);
-        });
+
+    //check to ensure the user collection has been created
+    var collection = db.get('usercollection');
+
+    if (collection) {
+            db.usercollection.find()
     } else {
-        alert("db not found, your browser does not support web sql!");
+        alert("db not found, something has gone terribly wrong.");
     }
+    
 }
 $(document).on("pagecreate","#edit",function(){
  $("#cancel").on("tap",function(){
@@ -196,41 +147,41 @@ function clearEdit() {
     document.getElementById("Notes").value="";
     document.getElementById("oldId").innerHTML="-1";
 }
- 
+
 function addContact() {
+
     var oldId = document.getElementById("oldId").innerHTML;
     var image = document.getElementById("theImage").src;
     var tele = document.getElementById("Tele").value;
     var name = document.getElementById("Name").value+" ";
     var notes = document.getElementById("Notes").value;
 
-        //Test to ensure that the user has entered both a make and model
-        
-            //Insert the user entered details into the cars table, note the use of the ? placeholder, these will replaced by the data passed in as an array as the second parameter
+    //There should be more security but we don't have time for that
+    // Set our collection
+    var collection = db.get('usercollection');
+
             mydb.transaction(function (t) {
-                t.executeSql("INSERT INTO contacts (image, tele, name, notes) VALUES (?, ?, ?,?)", [image, tele, name, notes]);
+                db.usercollection.insert({
+                    "oldId" : oldId
+                    "name" : name, 
+                    "tele" : tele, 
+                    "notes" : notes })
                 outputContacts();
             });
             clearEdit();
             if(oldId!="-1"){
                 deleteContact(parseInt.oldId);
             }
-        
-    
 }
-
-
-//function to remove a car from the database, passed the row id as it's only parameter
 
 function deleteContact(id) {
     //check to ensure the mydb object has been created
     if (mydb) {
-        //Get all the cars from the database with a select statement, set outputCarList as the callback function for the executeSql command
         mydb.transaction(function (t) {
-            t.executeSql("DELETE FROM contacts WHERE id=?", [id], outputContacts);
+            db.collection.remove( {"oldID" : id} )
         });
     } else {
-        alert("db not found, your browser does not support web sql!");
+        alert("db not found, something exploded.");
     }
 }
 

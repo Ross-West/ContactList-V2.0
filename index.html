@@ -44,37 +44,8 @@
         <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
          <script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
+           <script type="text/javascript" src="js/server.js"></script>
            <script type="text/javascript" src="js/index.js"></script>
-    <script type="text/javascript">
-            $(function(){       
-                $('#select_link').click(function(e){
-                    e.preventDefault();
-                    console.log('select_link clicked');
-                    
-                    
-          var data = {};
-          data.title = "title";
-          data.message = "message";
-          
-          $.ajax({
-            type: 'GET',
-            data: JSON.stringify(data),
-                contentType: 'application/json',
-                        url: 'http://localhost:8081/listUsers',           
-                        success: function(data) {
-                            console.log('success');
-                            console.log(JSON.stringify(data));
-                        },
-                    error: function (msg, url, line) {
-                        alert('error trapped in error: function(msg, url, line)');
-                        alert('msg = ' + msg + ', url = ' + url + ', line = ' + line);
-
-                    }
-                    });
-          
-                });       
-            });
-        </script>
    <!-- <script>
                 $(document).bind('mobileinit',function(){
                     $.mobile.changePage.defaults.changeHash = false;
